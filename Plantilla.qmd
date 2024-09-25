@@ -1,6 +1,6 @@
 ---
-title: "Proyecto Gestión Financiera"
-author: "Julio Tejero"
+title: "Hito 1"
+author: "Benjamín Ahumada Pavez"
 format: html
 editor: visual
 bibliography: references.bib
@@ -21,301 +21,250 @@ library(tidyquant)
 
 ## Descripción Activo y Contexto
 
-Fecha de entrega límite: Miércoles 25 de Septiembre 23:59.
+### Sector/Temática
 
-### Definición
+El análisis de la opción de compra de Tesla, Inc. "TSLA Sep 2024 222.500 call" para septiembre de 2024 se enmarca en el dinámico sector de la tecnología y la automoción, específicamente en el nicho de vehículos eléctricos y tecnologías de energía renovable. Este sector se caracteriza por su rápida evolución, impulsada por avances tecnológicos significativos y cambios regulatorios a nivel global que buscan promover la sostenibilidad ambiental. Las empresas como Tesla están a la vanguardia de la innovación en movilidad eléctrica, lo que las hace particularmente sensibles a las fluctuaciones del mercado y las hace un sujeto ideal para el estudio de instrumentos financieros complejos como las opciones.
 
-El activo elegido fue Enel Chile S.A. La compañía es una extensión de Enel, empresa italiana. Se dedica a generación, distribución y transformación de energía a lo largo de todo el país.
-
-Enel Chile se formó a partir de una reestructuración que comenzó en el año 2015, en ese entonces la empresa se llamaba Enersis Américas. En esta reestructuración, se aprobó la fusión de las compañías Enersis Chile, Endesa Chile y Chilectra en una estrategia denominada "La Fusión". En este mismo proceso se procedió al cambio de nombre a la hoy conocida Enel Chile S.A.
-
-Enel Chile es la mayor suministradora de energía del país, debido a esto en relevante exponer los datos nacionales de uso de electricidad. En el paper "Consumption-based carbon emissions, renewable energy consumption, financial development and economic growth in Chile" de @kirikkaleli2021 se expone un análisis descriptivo de los consumos nacionales de electricidad, el cual se presenta a continuación:
-
-[![Tabla 2 en](Data/Screenshot%202023-09-28%20at%2015.51.18.png){fig-align="center"}](https://doi.org/10.1002/bse.2945)
-
-En donde:
-
--   CCO2: Emisiones de carbonos basadas en el consumo de energía medida en millones de toneladas de CO2.
-
--   GDP: Crecimiento de la economía medido en el PIB per cápita.
-
--   ELE: Consumo eléctrico medido en Kw/h.
-
--   REN: COnsumo de energía renovables medido en Tw/h.
-
--   FD: Crecimiento financiero, medida amplia para el desarrollo financiero teniendo en cuenta su eficiencia, accesibilidad y profundidad.
-
-```{r ETL}
-#| echo: false
-# Alternativamente Use FANG data set
-# data("FANG") 
-end <- as_date("2022-12-31")
-# Get AAPL and AMZN Stock Prices
-# AAPL <- tq_get("AAPL", get = "stock.prices", from = "2015-09-01", to = end)
-# AMZN <- tq_get("AMZN", get = "stock.prices", from = "2000-01-01", to = end)
-ENELCHILE <- tq_get("ENELCHILE.SN", get = "stock.prices", from = "2017-01-01", to = end)
-ENELAM <- tq_get("ENELAM.SN", get = "stock.prices", from = "2017-01-01", to = end)
-AESANDES <- tq_get("AESANDES.SN", get = "stock.prices", from = "2017-01-01", to = end)
-ECL <- tq_get("ECL.SN", get = "stock.prices", from = "2017-01-01", to = end)
-CL <- rbind(ENELCHILE,ENELAM,AESANDES,ECL)
-```
-
-Por otro lado, también es de suma importancia tener en consideración los precios históricos del activo ENELCHILE, el cual actualmente tiene un valor promedio para el intervalo de años 2017-presente igual a `r round(mean(ENELCHILE$close),digits=0)`. A continuación se presentan dos gráficos que muestran estos datos históricos:
-
-```{r ENELCHILEline}
-#| echo: false
-ENELCHILE %>%
-    ggplot(aes(x = date, y = close)) +
-    geom_line() +
-    labs(title = "ENELCHILE Line Chart", y = "Closing Price", x = "") + 
-    theme_tq() +
-  geom_hline(yintercept=mean(ENELCHILE$close), linetype="dashed", color = "red")
-```
-
-```{r ENELCHILEcandle}
-#| warning: false
-ENELCHILE %>%
-    ggplot(aes(x = date, y = close)) +
-    geom_candlestick(aes(open = open, high = high, low = low, close = close)) +
-    labs(title = "ENELCHILE Candlestick Chart", y = "Closing Price", x = "") +
-    theme_tq()
-```
+La industria automotriz eléctrica ha ganado un interés considerable en la literatura económica y financiera, donde se analizan las implicaciones de las políticas de incentivos para vehículos de bajas emisiones y su impacto en las estructuras de capital de las empresas del sector. Estudios cómo el de Maradin, Dario & Malnar, Ana & Kaštelan, Ana. (2022) y el de Zhu, Ziyu. (2022) han examinado cómo los ciclos de innovación tecnológica y las normativas gubernamentales afectan la valoración de empresas, destacando la importancia de integrar consideraciones de riesgo y oportunidad en la valoración de opciones.
 
 ### Motivación
 
-Se escogió este activo en particular debido al compromiso con el medio ambiente y a indicadores ASG (Ambiental, Social y Gobernanza), alguno de sus objetivos son:
+La decisión de explorar la opción de compra de Tesla se motiva por la necesidad de entender cómo la inherente volatilidad del mercado de vehículos eléctricos impacta las estrategias de inversión y gestión de riesgo. Tesla, reconocida por su capacidad disruptiva en el sector automotriz, enfrenta una volatilidad de precios excepcionalmente alta, lo que la convierte en un caso de estudio ideal para aplicar teorías financieras avanzadas. Este análisis es crucial para inversores y analistas que buscan capturar el potencial de crecimiento de Tesla mientras gestionan la exposición al riesgo en un mercado altamente incierto.
 
-Alcanzar un 80% de energía renovable en su matriz de generación para 2024, reducir las emisiones de gases de efecto invernadero en un 40% para 2025 y aumentar la eficiencia energética en un 20% para 2030.
+Además, este estudio ofrece la oportunidad de aplicar y comparar metodologías de valoración de opciones, como los modelos Black-Scholes y Binomial, en un entorno real y altamente volátil. Al hacerlo, se pueden evaluar las predicciones de estos modelos en situaciones de mercado extremas y comprender mejor cómo las expectativas futuras y los cambios en la volatilidad pueden influir en la prima de las opciones.
 
-Como menciona el Diario Financiero (DF) Enel Chile sostiene una estrategia de sostenibilidad para llegar a ser una empresa carbono neutral al año 2040. Para lograr este objetivo, Enel destinará US\$1.700 millones a temas ASG, los que principalmente se gastarán en la construcción de nuevas plantas de energías renovables.
+Este trabajo no solo responde a un interés académico en la teoría financiera, sino que también provee insights prácticos para el manejo de opciones en sectores tecnológicamente avanzados y volátiles. La evaluación de opciones sobre acciones de Tesla permite ilustrar la aplicación de conceptos financieros en decisiones de inversión que consideran tanto el riesgo como las proyecciones de crecimiento a largo plazo en un contexto de cambios tecnológicos y regulatorios rápidos.
 
-Asimismo, varios documentos de la WOS (Web of Science) sustentan la iniciativa medioambiental de Enel Chile, principalmente con tarifas variables que logren cambiar los hábitos de uso de energía, homeostaticidad energética, entre otros.
-
-Todos estos puntos fomentan el interés especifico sobre este activo por sobre los demás activos energéticos incluidos en el IPSA.
+Estos enfoques proporcionan una base sólida para futuras investigaciones y desarrollos en la financiación de tecnologías limpias y la gestión de inversiones en sectores de alta tecnología, permitiendo a los inversores y analistas financieros desarrollar estrategias más robustas y adaptadas a las realidades del mercado actual.
 
 ### Contexto
 
-El IPSA tiene 4 componentes de la industria de energía, Enel Chile S.A, Enel Latinoamerica S.A, Engie Energia Chile S.A y AES Gener SA. Los primeros 2 corresponden a la empresa italiana Enel. A continuación se presentan los precios históricos de cada una de estas acciones:
+En este análisis, exploramos la influencia de diversas variables financieras en la valoración de la opción "TSLA Sep 2024 222.500 call". Este enfoque integral abarca la tasa de interés representada por las Letras del Tesoro a 3 meses, el precio de las acciones de Tesla, y la volatilidad histórica de estas acciones, con el fin de proporcionar una evaluación detallada y contextualizada de la opción de compra.
 
-```{r context}
-#| warning: false
-#| echo: false
-start <- end - weeks(6)
+Según Ross et al. (2022), la valoración de opciones es profundamente afectada por la volatilidad del activo subyacente y la tasa libre de riesgo. La tasa libre de riesgo es crucial en modelos como Black-Scholes para determinar el valor presente de los precios de ejercicio. Esta teoría subraya cómo factores como las tasas de interés de las Letras del Tesoro pueden influir en el costo de oportunidad de invertir en opciones, proporcionando una perspectiva fundamental sobre la dinámica del mercado de opciones.
 
-CL %>%
-    filter(date >= start - days(2 * 15)) %>%
-    ggplot(aes(x = date, y = close, group = symbol)) +
-    geom_line() +
-    labs(title = "Activos Energía IPSA", 
-         subtitle = "Comparativo de activos del sector",
-         y = "Precio al cierrew", x = "") + 
-    coord_x_date(xlim = c(start, end)) +
-    facet_wrap(~ symbol, ncol = 2, scale = "free_y") +
-    theme_tq()
-```
+La tasa de interés, específicamente la tasa de las Letras del Tesoro a 3 meses, es un componente esencial en la valoración de opciones debido a su papel como tasa libre de riesgo en modelos financieros como el Black-Scholes. En agosto de 2024, se puede observar en la imagen 3.1, que esta tasa alcanzó un 5.05%, mostrando un incremento notable desde tasas cercanas al 0% en años anteriores. Este aumento es significativo porque las tasas de interés más altas tienden a incrementar el costo de oportunidad de mantener opciones, lo que podría disminuir el valor de opciones de compra como la analizada. Al observar la gráfica de las tasas de interés junto con el precio de las acciones de Tesla, no se observa una correlación directa en el corto plazo, ya que las acciones de Tesla han mantenido una tendencia alcista a pesar del aumento en las tasas de interés, lo que podría sugerir que el mercado anticipa un crecimiento robusto continuo de Tesla que compensa el aumento de las tasas.
 
-Si bien los montos de los precios dependen de otros factores, tales como la cantidad de acciones que componen la compañía, si se observan tendencias entre estas. La más clara es que ambas empresas de Enel siguen un mismo patrón de precios, lo que hace sentido ya que pertenecen al mismo grupo. Lo que también se aprecia, es que cuando el precio de Enel aumenta, tanto de Engie Energia Chile S.A como el de AES Gener SA disminuye. Esto se puede deber a que la variación en la participación que tiene en la industria cada uno de estas influye inversamente en la otra (a mayor participación de Enel Chile, menor será la de el resto de los suministradores nacionales).
+![](photos/fred%20tbill.png)
 
-También es interesante ver las rentabilidades que ha tenido el activo elegido:
+Imagen 3.1: Tasas T-Bill
 
-![](Data/Screenshot%202023-09-28%20at%2017.57.54.png){fig-align="center" width="144"}
+Fuente: FRED
 
-A partir de esto se puede ver que Enel Chile ha tenido un crecimiento en la mayoría de los años, aunque se puede apreciar una baja de casi un 50% en el año 2021 debido a la pandemia de Covid-19. Cabe destacar que según analistas de Yahoo Finance, Enel Chile tendrá un crecimiento estimado cercano al 65,80%.
+El precio de las acciones de Tesla, por otro lado, ha mostrado una volatilidad significativa, característica que define a menudo a las empresas tecnológicas y de rápido crecimiento como Tesla. Esta volatilidad no solo refleja la reacción del mercado a eventos internos y externos sino también las expectativas de crecimiento futuro de la empresa. Al analizar el comportamiento del precio de las acciones, que recientemente se sitúa alrededor de los \$250, es evidente que Tesla sigue siendo un actor dinámico en el mercado, cuyo valor intrínseco de las opciones de compra se ve altamente influenciado por estas fluctuaciones de precios.
 
-### Modelo Binomial
+![](photos/precio tesla.png)
 
-El Modelo Binomial de Valoración de Opciones (BM, por sus siglas en inglés) también conocido como Cox-Ross-Rubinstein introducido en @cox1979, es un modelo que estima el valor de una opción en t=0 teniendo pagos futuros en diferentes estados (usualmente "Up" y "Down"). Este Modelo Binomial asume que no hay posibilidad de arbitraje en el mercado, determinando el precio que sigue un activo en un random walk, en donde en cada paso (tiempo) existe una probabilidad de que el precio suba o baje (Ahmad, 2018).
+Imagen 3.3: Precio TSLA
 
-![Random Walk en BM de un paso (Ahmad, 2018)](Data/Screenshot%202023-10-19%20at%2010.33.38.png){fig-align="center"}
+Fuente: Yahoo Finance
 
-Para calcular la valoración de la opción con el Modelo Binomial, es necesario definir $S_0$, que corresponde al precio actual del activo. Además, se deben determinar los valores de $u$ y $d$, que representan los factores por los cuales se multiplica $S_0$ en cada estado para obtener el precio del activo en cada caso en el siguiente período (t = 1):
+Finalmente, la volatilidad histórica de las acciones de Tesla ilustra aún más la incertidumbre y el riesgo asociados con esta inversión. La volatilidad, medida a través de las fluctuaciones de precio mensuales, ha sido notablemente alta, lo que incrementa el valor de las opciones de compra debido al potencial de movimientos de precio significativos que pueden beneficiar al poseedor de la opción. Esta alta volatilidad es crucial para entender el precio premium de las opciones sobre acciones de Tesla, ya que refleja no solo el riesgo percibido sino también las oportunidades de ganancias sustanciales.
 
-$$
-S_1 = \begin{cases}    S_0\cdot u \text{ en el estado ``Up"} \\    
-S_0\cdot d \text{ en el estado ``Down"}\end{cases}
-$$
+![](photos/volatilidad.png)
 
-También se debe calcular la probabilidad $P$ de que ocurra el caso "Up", la probabilidad de que ocurra el otro caso ("Down") simplemete quedaría en $(1-P)$. Para el calculo de la porobabilidad se usa la siguiente ecuación:
+Imagen 3.3: Volatilidad histórica
 
-$$
-P = \frac{e^r-d}{u-d}
-$$
+Fuente: Yahoo Finance / Elaboración propia
 
-Donde $r$ es la tasa libre de riesgo.
+Al comparar estas variables, se destaca que la relación entre el aumento de las tasas de interés y el comportamiento del precio de las acciones de Tesla no sigue necesariamente los principios económicos convencionales de inversión en acciones. Esto se debe posiblemente a las fuertes expectativas de crecimiento de Tesla y a su capacidad para innovar y dominar dentro de su sector. El análisis de estas tres variables proporciona una base sólida para entender mejor los riesgos y las oportunidades al valorar opciones financieras en contextos de mercado volátiles y en rápida evolución como el de Tesla.
 
-Por otro lado se deben calcular $C_u$ y $C_d$ los cuales se obtienen como los precios de una opción europea:
+### Derivados
 
-$$
-C_u = max(0, S_0\cdot u-k)\\
-C_d = max(0, S_0\cdot d-k)
-$$
+Para poder realizar un análisis sobre el modelo Black-Scholes y Binomial, es necesario definir los siguientes parámetros los cuales se pueden obtener de la imagen 3.3, 4.1 y 4.2:
 
-Finalmente el precio de la opción se calcula de la siguiente manera:
+-   Precio de ejercicio/Strike (K): **222.50 USD**
 
-$$
-V = \frac{C_u\cdot P + C_d\cdot (1-P)}{1+r}
-$$
+-   Precio del activo subyacente (S0): **250 USD**
 
-```{r}
-binomial_model <- function(cu, p, cd, rf) {
-  return((cu*p + cd*(1-p))/(1+rf))
-} 
+-   Valor de la opción (Q3): **28 USD**
 
-S <- tail(ENELCHILE$close,1)  # Precio actual del activo subyacente
-K <- 38  # Precio de ejercicio de la opción
-T <- 1  # Tiempo hasta la expiración (en años)
-r <- 0.0642 # Tasa de interés libre de riesgo
-u <- 1.1  # Factor de crecimiento en un paso hacia arriba
-d <- 0.9  # Factor de crecimiento en un paso hacia abajo
+-   Precio T-Bill a 10 años (B): **100.53 USD**
 
-Su <- S*u
-Sd <- S*d
-p <- (1+r-d)/((1+r)*(u-d))
+-   Interés T-Bill a 10 años (r): **3.51%**
 
-cu <- max(Su - K, 0)
-cd <- max(Sd - K, 0)
+-   Day’s Range: **7.2**
 
+-   Precio estado Upper = **257.2 USD**
 
-print(paste("El precio de la opción con el Modelo Binomial es ", binomial_model(cu, p, cd, r)))
+-   Precio estado Downer = **242.8 USD**
 
-```
+![](photos/opcion.png)
 
-### Modelo Black and Scholes (BS)
+Imágen 4.1: Opción 225.500 Call TSLA
 
-```{r}
-black_scholes <- function(S, K, t, r, sigma) {
-    d1 <- (log(S/K) + (r + 0.5 * sigma^2) * t) / (sigma * sqrt(t))
-    d2 <- d1 - sigma * sqrt(t)
-    N_d1 <- pnorm(d1)
-    N_d2 <- pnorm(d2)
-    precio_call <- S * N_d1 - K * exp(-r * t) * N_d2
-    return(precio_call)
-  }
-  
-rendimientos <- diff(log(ENELCHILE$close))
-sigma<-sd(rendimientos[2:length(rendimientos)])
-volatilidad<-var(rendimientos[2:length(rendimientos)])
+Fuente: Yahoo Finance
 
+![](photos/bono.png)
 
-S<- tail(ENELCHILE$close,1) # Precio actual del activo subyacente
-K<- 38 # Precio de ejercicio de la opción
-R<- 0.0642 # Tasa de interés libre de riesgo
-t <- 1 # Tiempo hasta la expiración (en años)
+Imágen 4.2: Valores bonos
 
-print(paste("El precio de la opción con el Modelo Black and Scholes es ", black_scholes(S, K, t, R, sigma)))
+Fuente: Bloomberg
 
+A partir de los datos respectivos, procedemos a obtener el factor de disminución y el factor de aumento:
 
-```
+-   Factor de disminución (d): 250-7.2250= 0.9712
 
-### Comparación de modelos
+-   Factor de aumento (u): 250+7.2250= 1.0288
 
-Ambos modelos son comúnmente utilizados en las finanzas. Por lo tanto, se puede afirmar que cuentan con respaldo y fundamentos sólidos. Según el artículo de (Ahmad, 2018), los resultados del precio de la opción calculados con ambos modelos muestran una correlación muy cercana a 1, lo que significa que si el precio de la opción aumenta con un modelo, también lo hace con el otro. Sin embargo, esto no implica que ambos modelos proporcionen el mismo precio, como se puede observar en el ejercicio realizado anteriormente.
+Los datos recopilados para la opción de compra "TSLA Sep 2024 222.500 call" destacan la sensibilidad del precio de la opción a los cambios en el mercado financiero. La opción, con un precio de ejercicio de \$222.50 y un valor de mercado actual de \$28, refleja una prima considerable que incorpora tanto la volatilidad actual del activo subyacente como las expectativas futuras del mercado. Con el precio actual de las acciones de Tesla en \$250, la opción se encuentra "in-the-money", lo que sugiere una perspectiva positiva de los inversores sobre el desempeño futuro de Tesla. Los factores de aumento y disminución, calculados como 1.0288 y 0.9712 respectivamente, nos permiten modelar escenarios de precios futuros del activo subyacente, esenciales para la aplicación de modelos de valoración de opciones como el binomial y Black-Scholes.
 
-Estos modelos difieren en algunas cosas, tales como:
+El rendimiento del bono del Tesoro a 5 años, utilizado como tasa libre de riesgo, se fija en un 3.51%. Este rendimiento refleja las condiciones económicas actuales y proporciona una base para estimar el costo del capital en los cálculos financieros. Esta tasa es crucial para calcular el valor presente de los flujos futuros esperados de la opción y ajustar el modelo de valoración a la realidad económica. La precisión de estos modelos y su capacidad para prever los movimientos del precio del activo subyacente bajo diferentes escenarios económicos hacen que sean herramientas valiosas en la toma de decisiones de inversión en opciones financieras.
 
--   Precio del activo subyacente: En modelo Black and Scholes sigue una distribución lognormal mientras que el Binomial multiplica el valos $S_0$ con dos opciones ($u$ y $d$)
+\
+Con todos estos datos, procedemos en primer lugar a obtener los resultados del modelo binomial a través del cuaderno **ArbitrajeBlackScholes.ipynb** reemplazando los valores obtenidos.
 
--   Debido a lo anterior, el modelo de Black and Scholes es continuo y el Binomial discreto.
+### Metodología
 
--   El modelo BS sirve solo para opciones europeas, mientras que el Binomial también sirve para opciones americanas.
+Este análisis se realizó en Google Colab, utilizando un cuaderno Jupyter específicamente diseñado para aplicar el modelo binomial en la valoración de opciones. El modelo fue adaptado para evaluar la opción "TSLA Sep 2024 222.500 call" en un solo período, aproximando los resultados al modelo de Black-Scholes. Se siguieron los siguientes pasos:
 
-También tienen algunas similitudes:
+1.  **Definición de la Estructura Financiera**:
 
--   Ambos utilizan el precio actual del activo subyacente.
+    -   **Un bono libre de riesgo**, con un valor inicial de \$100.53 y una tasa de retorno de 3.51% anual, representando la tasa libre de riesgo actual para los cálculos.
 
--   Ambos usan la tasa libre de riesgo.
+    -   **Una acción riesgosa**, específicamente acciones de Tesla, con un valor inicial de \$250. Este valor refleja el precio actual del mercado, proporcionando una base para los cálculos de la opción.
 
--   En este caso los dos se usaron para un periodo de tiempo.
+2.  **Incorporación de la Opción**:
 
--   Ambos consideran la volatilidad del activo.
+    -   Se modeló la opción de compra con un precio de ejercicio de \$222.50. El retorno de la opción se calculó utilizando los factores de aumento (u = 1.0288) y disminución (d = 0.9712), basados en la volatilidad observada y las expectativas de mercado.
 
-En resumen, el modelo de Black-Scholes constituye una buena herramienta analítica para valorar opciones europeas y supone movimientos continuos en las cotizaciones del mercado. En cambio, el modelo Binomial ofrece mayor flexibilidad al emplear una estructura de árbol que facilita la valoración tanto de opciones europeas como americanas. Elegir uno u otro modelo dependerá del tipo específico de opción que se esté analizando y las inferencias que se quieran hacer en relación a cómo evolucionarán los precios en el mercado financiero.
+3.  **Cálculo de Probabilidades Ajustadas por Riesgo**:
 
-# Hito 2 (en revisión):
+    -   Utilizando el Teorema Fundamental de Valoración de Activos, se garantizó que el modelo estuviera libre de arbitraje. Las probabilidades ajustadas por riesgo se calcularon para reflejar las posibles fluctuaciones en el precio del activo subyacente y ajustar los retornos esperados.
 
-### Análisis de Largo Plazo
+4.  **Valoración de la Opción**:
 
-#### Caracterización deuda
+    -   Con las probabilidades ajustadas, se calculó el valor esperado de la opción en el inicio del período. Este cálculo proporcionó una estimación del valor justo de la opción basada en los parámetros del modelo y los posibles movimientos del precio del activo subyacente.
 
-Enel Chile mantiene deudas de prestamos bancarios por monedas y vencimiento, el que se detalla a continuación:
+### Resultados
 
-![](Data/Screenshot%202023-09-28%20at%2019.15.48.png){fig-align="center" width="792"}
+Los cálculos obtenidos indicaron los siguientes valores para la opción de Tesla en diferentes escenarios de mercado:
 
-Del mismo estado financiero, se detallan los siguientes instrumentos financieros:
+-   **Estado Upper**: Valor de la opción de **\$32.2** cuando el precio del activo subyacente aumenta a \$257.2 para el primer período.
 
-1.  Activos financieros no derivados: Costo amortizado, Activos financieros registrados a valor razonable con cambios en otros resultados integrales y Activos financieros registrados a valor razonable con cambios en resultados.
-2.  Efectivo y equivalentes al efectivo
-3.  Deterioro de valor de los activos financieros
-4.  Pasivos financieros excepto derivados
-5.  Derivados y operaciones de cobertura
-6.  Baja de activos y pasivos financieros
-7.  Compensación de activos y pasivos financieros
-8.  Contratos de garantías financieras
+-   **Estado Downer**: Valor de la opción de **\$17.8** cuando el precio del activo baja a \$242.8 para el primer período.
 
-La inversiones de al compañía son colocadas segun el siguiente criterio mencionado en su estado financiero:
+Ahora bien, si ingresamos nuestros datos en el código, se obtienen los siguientes resultados.
 
-"Las inversiones de excedentes de caja se efectúan en entidades financieras nacionales y extranjeras de primera línea con límites establecidos para cada entidad.
+![](photos/jup.png)
 
-En la selección de bancos para inversiones se consideran aquellos que tengan calificación investment grade, considerando las tres principales agencias de rating internacional (Moody's, S&P y Fitch).
+Imagen 4.1: Resultados colab
 
-Las colocaciones pueden ser respaldadas con bonos del tesoro de Chile y/o papeles emitidos por bancos de primera línea, privilegiando estos últimos por ofrecer mayores retornos (siempre enmarcado en las políticas de colocaciones vigentes)."
+Fuente: Elaboración propia
 
-A continuación se presenta la clasificación de instrumentos financieros por naturaleza y categoria:
+Al analizar la matriz, se obtienen las siguientes conclusiones:
 
-![](Data/Screenshot%202023-09-28%20at%2019.29.34.png){width="700"}
+**Estado Inicial**:
 
-#### Caracterización de emisiones históricas (Aplicación cap. 20)
+-   En la **primera fila** de la matriz W, se encuentran los valores iniciales de los activos y la opción:
 
-Segun el último estado financiero emitido por la empresa Enel Chile en junio 2023, la compañía tiene 69.166.557 miles de acciones ordinaria en circulación. En la base de la CMF no existen registros de emisiones de acciones, sin embargo si hay una inscropción en el registri de valores por una emisión de 10.000.000.000 acciones de pago ordinarias para así aumentar el capital de la empresa en \$820.000.000.000, teniendo cada acción un precio de \$82.
+    -   **Bono**: Tiene un valor inicial de \$100.53 USD. Este valor refleja el costo de adquisición o el valor presente del bono.
 
-No existe registro del procedimiento utilizado para la emisión de estas acciones, solo se detalla que la junta extraordinaria de accionistas se llevó a cabo el 20 de diciembre de 2017 y que cuya acta se redujo a escritura publica el 28 de diciembre del mismo año.
+    -   **Activo Subyacente (Tesla)**: Valor inicial de \$250 USD. Este es el precio actual de las acciones de Tesla en el mercado.
 
-#### Relación con activos derivados
+    -   **Opción**: Valor inicial de \$28 USD. Este es el precio de la opción a la fecha.
 
-Para protección de la empresa, esta busca cobertura frente a posibles riesgos que puedan alterar los objetivos de la compañía. Ellos mismos señalan "Los derivados mantenidos por el Grupo corresponden fundamentalmente a operaciones contratadas con el fin de cubrir el riesgo..."
+**Estado Upper (u)**:
 
-Enel Chile toma en consideración y protección frente los siguientes riesgos:
+-   En la **segunda fila**, correspondiente al escenario donde el mercado sube:
 
-1.  Riesgo de tasa de interés
-2.  Riesgo de tipo de cambio
-3.  Riesgo de commodities
-4.  Riesgo de liquidez
-5.  Riesgo de crédito
+    -   **Bono**: Aumenta a \$104.06 USD, indicando que la tasa de interés aplicada proporciona un crecimiento moderado, coherente con un rendimiento bajo y seguro del bono.
 
-A continuación se desglozan los derivados de Enel Chile:
+    -   **Activo Subyacente**: Sube a \$257.2 USD. Este aumento refleja un mercado favorable para Tesla.
 
-![](Data/Screenshot%202023-09-28%20at%2019.49.03.png){fig-align="center"}
+    -   **Valor de la Opción**: Aumenta a \$32.2 USD. Este es el valor intrínseco de la opción, dado que el precio del activo es ahora mayor que el precio de ejercicio (\$225 USD).
 
-Los derivados se registran por su valor razonable en la fecha del estado de situación financiera. En el caso de los derivados financieros, si su valor es positivo, se registran en el rubro "Otros activos financieros", y si es negativo, en el rubro "Otros pasivos financieros". Si se trata de derivados sobre commodities, el valor positivo se registra en el rubro "Cuentas comerciales por cobrar y otras cuentas por cobrar" y si es negativo en el rubro "Cuentas comerciales y otras cuentas por pagar" (EEFF Enel Chile, Junio 2023).
+**Estado Downer (d)**:
 
-### Reporte grupal
+-   En la **tercera fila**, representando el escenario de baja del mercado:
 
-Se decidieron los siguientes pesos del portafolio basándose en distintos factores, pero principalente la estimación de crecimiento a un año de cada uno de los activos proporcionada por Yahoo Finance. Los porcentajes del portafolio serán los siguientes:
+    -   **Bono**: Se mantiene igual que en el estado upper, reafirmando la estabilidad y seguridad del bono como activo de bajo riesgo.
 
--   Enel: 50%
+    -   **Activo Subyacente**: Disminuye ligeramente a \$242.8 USD, pero aún está por encima del precio de ejercicio.
 
--   Banco de Chile: 30%
+    -   **Valor de la Opción**: Es \$17.8 USD. Aunque el valor intrínseco es menor en comparación con el escenario upper, la opción sigue siendo "in-the-money". Este valor sugiere que los inversionistas todavía esperan que el activo se mantenga por encima del precio de ejercicio hasta el vencimiento, mostrando un posible optimismo en el mercado o una expectativa de volatilidad moderada.
 
--   Parque Arauco: 20%
+### Interpretación de probabilidades ajustadas por riesgo
 
-En primer lugar, se determinó que Enel Chile tendra un 50% de peso en el portafolio debido al pronostico de crecimiento que tendrá en el proximo año (65.80%). Además en los ultimos 2 años ha obtenido un retorno promedio de 37.5%, mayor que los activos elegidos en las otras industrias. Otro aspecto que nos hizo elegir un peso mayor que las otras compañia es su compromiso con el medio ambiente, aspecto que cada vez es mas valordo. Por otro lado, la empresa ha invertido fuertemente en nuevos proyectos que probablemente demuestren mayores retornos en el futuro.
+-   **Impacto del Movimiento del Precio del Activo Subyacente**: La valoración futura de la opción dependerá significativamente de cómo se mueva el precio del activo subyacente. En el escenario upper, donde el precio sube a \$257.2, la opción gana considerable valor, reflejando un potencial de alta rentabilidad si el mercado sigue siendo favorable. En el escenario downer, con el precio a \$242.8, aunque la opción sigue "in-the-money", el valor intrínseco es menor, lo que indica un retorno reducido pero aún positivo.
 
-Por otro lado, al Banco de Chile se le asignó un 30% de peso en el portafolio debido a su liderzago en la industria bancaria en terminos de rentabilidad y ha jugado un papel sumamente importante a lo largo de los años en la industria financiera. Junto a esto, la proyección del banco en terminos de crecimiento para los proximos años, es positiva y cercana a un 11.8%.
+-   **Valor Temporal de la Opción**: En ambos escenarios, el valor temporal puede fluctuar basado en las expectativas del mercado, la volatilidad del precio del activo subyacente, y el tiempo hasta el vencimiento de la opción. El valor temporal capta el potencial de ganancia adicional que los inversionistas están dispuestos a pagar, más allá del valor intrínseco, debido a la probabilidad percibida de que el precio del activo continúe aumentando o se mantenga por encima del precio de ejercicio.
 
-Finalmente, a Parque Arauco se le otorgó un 20% del portafolio debido a la diversificación del modelo de negocios que han implementado en los últimos años. El ingreso al negocio de los edificios multifamily podría ser una razón de gran crecimiento para la empresa en el futuro, debido a que actualmente ya operan dos edificios en Santiago, tienen proyectos que estarán operando en el corto plazo en Perú y Colombia, y tienen planes de seguir ampliando esta cantidad. Considerando la gran demanda de arriendo que existe hoy en día, la empresa podría verse muy beneficiada con la implementación de este nuevo negocio.
+Por lo tanto, considerando ambos resultados, podemos proceder a calcular el valor de la opción mediante el modelo binomial descontando los flujos futuros.
 
-### Caso Grupal (No requerido para versión 2024)
+![](photos/binomial py.png){width="685"}
 
-Los datos se obtuvieron en su mayoría del Estado Financiero de la empresa Enel Chile a junio de 2023. Los datos que no pudieron ser encontrados se supusieron a partir de la misma información entregada en ese documento.
+Imagen 4.1: Cálculo de la opción a valor presente mediante las probabilidades
 
-El caso escogido para replicar con nuestro activo fue el del capítulo 28 del libro guía del curso "Finanzas Corporativas" de Ross, en el cual se evalúan tres opciones. A continuación, se presentan los datos:
+Fuente: Elaboración propia
 
-![Datos de Estado Financiero ENELCHILE](Data/Screenshot%202023-10-26%20at%2022.43.45.png)
+La valorización mediante este modelo nos destaca que es de \$25.09 dólares.
 
-![Datos ENELCHILE para Caso Cap.28](Data/Screenshot%202023-10-26%20at%2019.47.47.png)
+### **Modelo Black-Scholes**
 
-A partir de lo anterior, se puede determianar que el la opción 1 es la mejor debido a que obtiene el VPN mayor. Las opciones 2 y 3 dan un valor menor a la 1, lo que no se consideran optimas en este escenario.
+Para la opción de compra "TSLA Sep 2024 222.500 call", hemos aplicado el modelo Black-Scholes utilizando los siguientes parámetros:
+
+-   **Precio del activo subyacente (S):** \$250, el precio actual de las acciones de Tesla.
+
+-   **Precio de ejercicio (K):** \$222.5, el precio al que se puede comprar las acciones bajo la opción.
+
+-   **Tiempo hasta la expiración (T):** 0.011 años, lo que refleja el corto periodo hasta el vencimiento (27 de septiembre de 2024).
+
+-   **Tasa libre de riesgo (r):** 3.51%, representando la tasa de retorno de inversiones consideradas libres de riesgo para bonos del tesoro de estados unidos a 5 años.
+
+-   **Volatilidad (σ):** 56.72%, derivada de la volatilidad histórica de las acciones de Tesla.
+
+![](photos/vola.png)\
+Imagen 4.4.1: Cálculo volatilidad
+
+Fuente: Elaboración propia
+
+El valor de la opción calculado mediante el modelo Black-Scholes es de **\$27.71**. Este resultado refleja el precio justo de la opción de compra de Tesla, dado el tiempo restante hasta la expiración (muy corto), la volatilidad anualizada de 56.72%, la tasa libre de riesgo del 3.51%, y el precio actual de Tesla de \$250. Este valor se obtiene bajo el supuesto de que el mercado es eficiente, la volatilidad es constante, y la opción solo puede ejercerse en el vencimiento (opción europea).
+
+![](photos/black schole.png)
+
+Imagen 4.3.2: Black Scholes
+
+Fuente: Elaboración propia
+
+### **Comparación de los Modelos Binomial y Black-Scholes**
+
+-   **Modelo Black-Scholes**: Ofrece un valor de **\$27.71**. Este resultado es derivado de suposiciones de volatilidad constante y eficiencia de mercado, ofreciendo una estimación directa y basada en fórmulas que reflejan una visión simplificada y continua del comportamiento esperado del precio del activo subyacente.
+
+-   **Modelo Binomial**: Proporciona un valor final de **\$25.09**. Este modelo permite ver cómo podría cambiar el valor de la opción dependiendo de varios resultados del precio del activo subyacente a lo largo de dos periodos. El modelo binomial calcula el valor esperado de la opción basado en la probabilidad neutral al riesgo, descontando los posibles valores futuros al valor presente.
+
+#### **Análisis de los Estados del Mercado en el Modelo Binomial**
+
+-   **Estado Upper**: Valor potencial de la opción de **\$32.2** si el precio del activo subyacente sube a \$257.2, lo que indica un mercado favorable y un incremento significativo en el valor intrínseco de la opción.
+
+-   **Estado Downer**: Valor potencial de **\$17.8** si el precio baja a \$242.8. Aunque es menor que en el escenario upper, la opción todavía está "in-the-money" (el precio del activo sigue estando por encima del precio de ejercicio).
+
+#### **Flexibilidad y Precisión**
+
+-   **Modelo Binomial**: Ofrece una visión detallada y flexible al descomponer el tiempo hasta el vencimiento en periodos discretos, lo que permite un análisis más detallado de las reacciones del valor de la opción a diferentes situaciones del mercado.
+
+-   **Modelo Black-Scholes**: Proporciona una visión más generalizada y es más conveniente para obtener una rápida valoración teórica bajo supuestos de mercado estándar.
+
+#### **Interpretación de los Resultados**
+
+-   **Valor Intrínseco y Temporal**: Ambos modelos indican que la opción está "in-the-money". El valor temporal, que refleja las expectativas del mercado sobre el movimiento futuro del precio del activo, es capturado de manera diferente en cada modelo. En el modelo binomial, el valor temporal se ajusta según cada trayectoria posible del precio del activo.
+
+-   **Simplicidad vs. Complejidad**: Black-Scholes es ideal para una rápida valoración teórica y es suficientemente robusto en mercados eficientes o cuando las condiciones del mercado no cambian dramáticamente. El modelo binomial, en cambio, permite adaptar la valoración a las dinámicas específicas del mercado y puede ser más indicado en situaciones donde la volatilidad y las condiciones del mercado son inciertas o cambiantes.
+
+## **Conclusión**
+
+La evaluación de los valores calculados por los modelos Black-Scholes y Binomial en comparación con el precio de mercado actual de la opción, que es de \$28, revela diferentes perspectivas sobre el valor justo de la opción de compra de Tesla. El modelo Black-Scholes proporciona un valor de \$27.71, que está ligeramente por debajo del precio de mercado. Este resultado, derivado bajo supuestos de eficiencia de mercado y volatilidad constante, sugiere que el modelo está muy alineado con las expectativas actuales del mercado, ofreciendo una valoración que refleja casi exactamente el precio real de la opción. Esto indica que las condiciones del mercado y las suposiciones del modelo están bien alineadas y que el modelo puede ser efectivo para predecir precios en escenarios donde las variables de mercado no experimentan cambios drásticos.
+
+Por otro lado, el modelo Binomial, que calcula un valor de \$25.09, ofrece una visión que es algo más baja que el precio de mercado actual. Este modelo, al proporcionar una visión más detallada y adaptable del comportamiento de la opción en diferentes escenarios de mercado, sugiere que podría haber una ligera sobrevaluación en el precio de mercado de la opción, o que el mercado está incorporando expectativas de volatilidad más altas o movimientos positivos del precio del activo subyacente que no están completamente capturados en los escenarios modelados.
+
+La diferencia entre estos valores teóricos y el precio de mercado puede reflejar expectativas más optimistas sobre el comportamiento futuro del precio de Tesla o podría estar incorporando otros factores no completamente capturados por los modelos teóricos, como noticias específicas de la empresa o cambios en el entorno económico más amplio. El precio de mercado de \$28 muestra que los inversores podrían estar dispuestos a pagar un pequeño premium sobre los valores calculados, lo que puede ser por razones de estrategia, especulación, o cobertura.
+
+En última instancia, aunque ambos modelos proporcionan estimaciones valiosas para el valor teórico de la opción, es esencial considerar cómo estos valores teóricos se comparan con el precio real de mercado para comprender completamente las expectativas del mercado y la valoración de opciones. Los traders y gestores de carteras deben utilizar estos modelos como herramientas de referencia, pero también deben tener en cuenta el contexto más amplio del mercado y la dinámica específica del activo al tomar decisiones de inversión. Esto subraya la importancia de una visión holística en la gestión de inversiones, donde tanto las evaluaciones teóricas como las condiciones prácticas del mercado se consideran para optimizar las decisiones y estrategias de inversión.
 
 ## Bibliografía
 
-Ahmad Dar, A., Anuradha, N., 1 Department of Mathematics and Actuarial Science, B S Abdur Rahman Crescent University, IN, & 2 Department of Management Studies, B S Abdur Rahman Crescent University, IN. (2018). Comparison: Binomial model and Black Scholes model. *Quantitative Finance and Economics*, *2*(1), 230--245. <https://doi.org/10.3934/QFE.2018.1.230>
+Maradin, Dario & Malnar, Ana & Kaštelan, Ana. (2022). Sustainable and Clean Energy: The Case of Tesla Company. JOURNAL OF ECONOMICS, FINANCE AND MANAGEMENT STUDIES. 05. 10.47191/jefms/v5-i12-10. 
+
+Zhu, Ziyu. (2022). Analysis of the Valuation of Tesla Inc. SHS Web of Conferences, 151, 01045. <https://doi.org/10.1051/shsconf/202215101045>
+
+Ross, S. A., Westerfield, R. W., Jaffe, J., & Jordan, B. D. (2022). Finanzas corporativas (13ª ed.). McGraw-Hill Education.
